@@ -1,0 +1,9 @@
+<h1>tw222</h1>
+<p>141文字以上の文章を、twitterで表示できるように変換するサービス</p>
+<p> original text:<br>
+ <%= render :text => params[:org_text] %> </p>
+<p>result:<br>
+<%= render :text =>"#{@short_text}" %></p>
+<%= form_tag do %>
+<%= text_field_tag :org_text %>
+<% end %>
