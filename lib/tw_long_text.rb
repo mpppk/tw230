@@ -31,9 +31,18 @@ class TwLongText
 
   # 日本語URLにすべき状態になっているか
   def valid_url? text
-    puts "#{text} is long then MAX_URL_LENGTH"; return false if text.length > (MAX_URL_LENGTH + 1)
-    puts "#{text} don't have dot"; return false if text.index(".") == nil
-    puts "#{text} is short then NORMALIZED_URL_LENGTH"; return false if text.length < NORMALIZED_URL_LENGTH
+    if text.length > (MAX_URL_LENGTH + 1)
+      puts "#{text} is long then MAX_URL_LENGTH"
+      return false
+    end
+    if text.index(".") == nil
+      puts "#{text} don't have dot"
+      return false 
+    end
+    if text.length < NORMALIZED_URL_LENGTH
+      puts "#{text} is short then NORMALIZED_URL_LENGTH"
+      return false
+    end
     true
   end
 
