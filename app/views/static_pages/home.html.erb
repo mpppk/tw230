@@ -1,9 +1,17 @@
-<h1>tw222</h1>
-<p>141文字以上の文章を、twitterで表示できるように変換するサービス</p>
-<p> original text:<br>
- <%= render :text => params[:org_text] %> </p>
-<p>result:<br>
-<%= render :text =>"#{@short_text}" %></p>
+<h1>tw230</h1>
+<p>141文字以上230文字以下(現在は222文字以下)の文章を、twitterで表示できるように変換するサービス</p>
 <%= form_tag do %>
-<%= text_field_tag :org_text %>
+<%= simple_format("original text:") %>
+<%= text_area_tag :org_text, sanitize(@initial_contents), :maxlength => "220", :size => "46x5" %>
+<%= submit_tag "convert" %>
 <% end %>
+
+<%= simple_format("short text:") %>
+<%= text_area_tag :convert_text, sanitize(@short_text), :maxlength => "220", :size => "46x5" %>
+
+<%= simple_format("注意事項") %>
+<ul>
+<li>句読点は使えません。</li>
+<li>230文字以上になっても変換は行います。</li>
+<li>23文字以下の文章は変換を行いません。</li>
+</ul>
