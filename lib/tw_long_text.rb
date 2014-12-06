@@ -7,13 +7,26 @@ class TwLongText
 
   def initialize text
     @text = prepare_text text
+    # @links = []
   end
 
   def prepare_text text
-    text.gsub!(/[、。，]/, ".").gsub!(/[ 　]/, "_")
+    puts "---- original text ----"
+    puts text
+    text = divide_link text
+    puts "linnks in prepare_text: #{@links}"
+    text.gsub!("　", " ")        # => 全角空白を半角空白に置換
+    text.gsub!(/^ +/, "")        # => 文頭の空白を削除
+    text.gsub!(/ +$/, "")        # => 文末の空白を削除
+    text.gsub!(/ +/, " ")        # => 繰り返す空白を削除
+    text.gsub!(/[、。，]/, ".")   # => 句読点をドットに変換
+    text.gsub!(/[ _\-\.\$]+$/, "")    # => 文末の記号を削除  
+    text.gsub!(/ /, "_")         # => 空白を_に置換  
     text.scan(URI::UNSAFE).join.scan(/[^\p{Hiragana}\p{Katakana}一-龠々ー]/).each do |c|
       text.gsub!(c.to_s, "")
     end
+    puts "---- prepared text ----"
+    puts text
     text
   end
 
@@ -33,12 +46,27 @@ class TwLongText
 
   # 受け取った文字列が141文字以上ならURLに変換
   def to_short_text
-  	urls = add_dot(divide @text)
-  	normalized_urls = urls.map do |url|
-  		if valid_url?(url) then normalize_url("http://#{url}")
+    puts "links in short text: #{@links}"
+    urls = add_dot(divide @text)
+    normalized_urls = urls.map do |url|
+      if valid_url?(url) then normalize_url("http://#{url}")
       else url end
-  	end
-  	normalized_urls.join(" ")
+    end
+    short_text = normalized_urls.join(" ")
+    @links.each do |link|
+      puts "link: #{link}"
+      short_text << " #{link}"
+    end
+    short_text
+  end
+
+  # 文章中のURLを文章の最後に持ってくる
+  def divide_link text
+    new_text = text
+    @links = URI.extract(text)
+    puts "links in divide_link: #{@links}"
+    @links.each{ |link| new_text.gsub!(link, "") }
+    new_text
   end
 
   # 文章を37文字ごとに区切る
