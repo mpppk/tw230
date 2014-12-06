@@ -2,8 +2,9 @@ require 'addressable/uri'
 require 'uri'
 
 class TwLongText
-  MAX_URL_LENGTH        = 37
-  NORMALIZED_URL_LENGTH = 23
+  MAX_URL_LENGTH            = 37
+  NORMALIZED_URL_LENGTH     = 23
+  MAX_NORMALIZED_URL_LENGTH = 63
 
   def initialize text
     @text = prepare_text text
@@ -21,9 +22,17 @@ class TwLongText
     text.gsub!(/[、。，]/, ".")   # => 句読点をドットに変換
     text.gsub!(/[ _\-\.\$]+$/, "")    # => 文末の記号を削除  
     text.gsub!(/ /, "_")         # => 空白を_に置換  
+    
+    # URLに使えない記号を取り除く
     text.scan(URI::UNSAFE).join.scan(/[^\p{Hiragana}\p{Katakana}一-龠々ー]/).each do |c|
       text.gsub!(c.to_s, "")
     end
+
+    # 数字を漢数字に変換する
+    text.scan(/[0-9]+/).each do |n|
+      text.gsub!(n, num_to_k(n.to_i))
+    end
+
     puts "---- prepared text ----"
     puts text
     text
@@ -31,10 +40,6 @@ class TwLongText
 
   # 日本語URLにすべき状態になっているか
   def valid_url? text
-    if text.length > (MAX_URL_LENGTH + 1)
-      puts "#{text} is long then MAX_URL_LENGTH"
-      return false
-    end
     if text.index(".") == nil
       puts "#{text} don't have dot"
       return false 
@@ -83,10 +88,11 @@ class TwLongText
   end
   private :divide
   
-  # 24文字以上の文字列要素には、２文字目にドットを挿入する
+  # 24文字以上の文字列要素には、後ろから２文字目にドットを挿入する
   def add_dot texts
+    # 最後の24文字以内にドットが含まれており、かつそのドット以降に数字やアルファベットが入っていない場合は問題無い
   	texts.map do |t|
-  		if t.length > 23 then t.insert(1, ".")
+  		if t.length > NORMALIZED_URL_LENGTH then t.insert(-2, ".")
   		else t end
   	end
   end
@@ -99,4 +105,23 @@ class TwLongText
   end
   private :normalize_url
 
+  # 数字を漢数字に変換する
+  def num_to_k(n)
+    number = 0..9
+    kanji = ["","一","二","三","四","五","六","七","八","九"]
+    num_kanji = Hash[number.zip(kanji)]
+    digit = [1000,100,10]
+    # digit = (1..3).map{ |i| 10 ** i }.reverse
+    kanji_keta = ["千","百","十"]
+    num_kanji_keta = Hash[digit.zip(kanji_keta)]
+    num = n
+    str = ""
+    digit.each { |d|
+      tmp = num/d
+      str << (tmp == 0 ? "" : ((tmp == 1 ? "" : num_kanji[tmp]) + num_kanji_keta[d]))
+      num %= d
+    }
+    str << num_kanji[num]
+    return str
+  end
 end
