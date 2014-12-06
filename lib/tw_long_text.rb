@@ -1,11 +1,20 @@
 require 'addressable/uri'
+require 'uri'
 
 class TwLongText
   MAX_URL_LENGTH        = 37
   NORMALIZED_URL_LENGTH = 23
 
   def initialize text
-    @text = text
+    @text = prepare_text text
+  end
+
+  def prepare_text text
+    text.gsub!(/[、。，]/, ".").gsub!(/[ 　]/, "_")
+    text.scan(URI::UNSAFE).join.scan(/[^\p{Hiragana}\p{Katakana}一-龠々ー]/).each do |c|
+      text.gsub!(c.to_s, "")
+    end
+    text
   end
 
   # 日本語URLにすべき状態になっているか
