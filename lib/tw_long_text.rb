@@ -7,7 +7,6 @@ class TwLongText
 
   def initialize text
     @text = prepare_text text
-    # @links = []
   end
 
   def prepare_text text
