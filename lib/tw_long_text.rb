@@ -62,6 +62,10 @@ class TwLongText
       else url end
     end
     short_text = normalized_urls.join(" ")
+
+    # 文章の末尾がURLでなく、かつ.丨だったら取り除く
+    short_text.gsub!(".丨", "")
+
     @links.each do |link|
       puts "link: #{link}"
       short_text << " #{link}"
