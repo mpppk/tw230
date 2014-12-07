@@ -16,6 +16,7 @@
 <%= text_area_tag :convert_text, sanitize(@convert_text), :size => "46x5" %>
 
 <%= simple_format("short text: #{@short_text_length}文字/140文字 ぐらい") %>
+<%= simple_format(@short_text_error_message) %>
 <%= text_area_tag :short_text, sanitize(@short_text), :size => "46x5" %>
 
 <%= simple_format("#{sprintf( "%.1f", @comp_rate )}%圧縮しました.") %>
@@ -32,7 +33,6 @@
 <li>short textの文字数が141文字を越えるとツイートできなくなるので、それ以下になるように元の文章を適宜編集してください。</li>
 <li>句読点はピリオドに変換されます。</li>
 <li>だいたいの記号は削除されます。</li>
-<li>!や?を使うとうまく変換されないので使わないでください。</li>
 <li>文章中に".丨"という記号が付与される場合があります。</li>
 <li>23文字以下の文章は変換を行いません。</li>
 <li>URLは文末に勝手に移動します。</li>
