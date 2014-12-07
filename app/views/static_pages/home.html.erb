@@ -2,16 +2,21 @@
 <p>141文字以上の文章を、twitterで表示できるように変換するサービス</p>
 <%= form_tag do %>
 <%= simple_format("original text:") %>
-<%= text_area_tag :org_text, sanitize(@initial_contents), :maxlength => "220", :size => "46x5" %>
+<%= text_area_tag :org_text, sanitize(@org_text), :size => "46x5" %>
 <%= submit_tag "convert" %>
 <% end %>
 
 <%= simple_format("short text:") %>
-<%= text_area_tag :convert_text, sanitize(@short_text), :maxlength => "220", :size => "46x5" %>
+<%= text_area_tag :short_text, sanitize(@short_text), :size => "46x5" %>
+
+<%= simple_format("変換後テキスト:") %>
+<%= simple_format( sanitize(@convert_text) ) %>
+
+
 
 <%= simple_format("注意事項") %>
 <ul>
-<li>変換後の文字数が140文字以下になる保証はありません。twitterにコピペして試してみてください。</li>
+<li>現状では、変換後の文字数が140文字以下になる保証はありません。twitterにコピペして試してみてください。</li>
 <li>文章の最後に".丨"という記号が付与される場合があります。</li>
 <li>23文字以下の文章は変換を行いません。</li>
 <li>不具合報告はniboshiporipori(at)gmail.comまでお願いします。</li>
@@ -23,3 +28,5 @@
 <li>アルファベットを使わない。使う場合はできるだけ文頭の方で使う</li>
 <li>数字を漢数字にする。アラビア数字を使う場合はできるだけ文頭の方で使う</li>
 </ul>
+
+<%= simple_format(@version) %>
