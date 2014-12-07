@@ -62,6 +62,12 @@ class TwLongText
       if valid_url?(url) then normalize_url("http://#{url}")
       else url end
     end
+    
+    normalized_urls.map do |url|
+      url.gsub!("http://.", "http://")
+      url.gsub!("https://.", "https://")
+    end
+
     short_text = normalized_urls.join(" ")
 
     # 文章の末尾がURLでなく、かつ.丨だったら取り除く
@@ -106,17 +112,20 @@ class TwLongText
     # 最後の24文字以内にドットが含まれており、かつそのドット以降に数字やアルファベットが入っていない場合は問題無い
   	bet_dot_texts = text.split(".")
 
-    # 最後のドット以降に日本語以外が含まれていた場合は、適当なgTLを追加
-    if bet_dot_texts.last.match(/[^\p{Hiragana}\p{Katakana}一-龠々ー]/)
-      bet_dot_texts.last << ".丨" # 縦棒は漢字のコン
-    end
-
     bet_dot_texts.each do |t|
       next if t.length < (NORMALIZED_URL_LENGTH)
       (t.length/NORMALIZED_URL_LENGTH).floor.times do |i|
         t.insert( (i * NORMALIZED_URL_LENGTH) + (NORMALIZED_URL_LENGTH).to_i, "." )
       end
-  	end
+    end
+
+    # 最後のドット以降に日本語以外が含まれていた場合は、適当なgTLを追加
+    bet_dot_texts = bet_dot_texts.join(".").split(".")
+    if bet_dot_texts.last.match(/[^\p{Hiragana}\p{Katakana}一-龠々ー]/)
+      puts "add .| : #{bet_dot_texts.last}"
+      bet_dot_texts.last << ".丨" # 縦棒は漢字のコン
+    end
+
     bet_dot_texts.join(".")
   end
   private :add_dot
