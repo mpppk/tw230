@@ -1,5 +1,6 @@
 require 'addressable/uri'
 require 'uri'
+require 'nkf'
 
 class TwLongText
   MAX_URL_LENGTH            = 38
@@ -8,7 +9,7 @@ class TwLongText
 
   def initialize text
     @org_text = text.dup
-    @text = preprocess_text text
+    @text = preprocess_text( NKF.nkf('-m0Z1 -w', text) )
   end
 
   def preprocess_text text
