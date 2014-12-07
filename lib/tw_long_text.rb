@@ -57,18 +57,23 @@ class TwLongText
 
   # 受け取った文字列が141文字以上ならURLに変換
   def to_short_text
-    urls = divide(@text)
+    divide_result = divide(@text)
+    urls = divide_result[:texts]
     normalized_urls = urls.map do |url|
       if valid_url?(url) then normalize_url("http://#{url}")
       else url end
     end
-    
+
     normalized_urls.map do |url|
       url.gsub!("http://.", "http://")
       url.gsub!("https://.", "https://")
     end
 
-    short_text = normalized_urls.join(" ")
+    short_text =  normalized_urls.map.with_index do |v, i|
+      v + divide_result[:separates][i]
+    end
+    short_text = short_text.join
+    # short_text = normalized_urls.join(" ")
 
     # 文章の末尾がURLでなく、かつ.丨だったら取り除く
     short_text.gsub!(".丨", "")
@@ -92,7 +97,9 @@ class TwLongText
 
   # 文章を37文字ごとに区切る
   def divide text
-    texts = []
+    ret = {}
+    ret[:separates] = []
+    ret[:texts] = []
     que = text.dup.split("")
     
     while que.length > 0
@@ -103,9 +110,17 @@ class TwLongText
         break if que[0].match(/[^\p{Hiragana}\p{Katakana}一-龠々ー]/)
         pt << que.shift
       end
-      texts << pt.join
+      ret[:texts] << pt.join
+
+      if que.length > 0
+        if que[0].match(/[\p{Hiragana}\p{Katakana}一-龠々ー]/) then ret[:separates] << que.shift 
+        else ret[:separates] << " " end
+      else ret[:separates] << "" end
     end
-    texts
+    puts "ret in divide"
+    puts ret
+
+    ret
   end
   private :divide
   
