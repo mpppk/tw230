@@ -22,7 +22,7 @@ class TwLongText
     text.gsub!(/ +/, " ")        # => 繰り返す空白を削除
     text.gsub!(/[、。，]/, ".")   # => 句読点をドットに変換
     text.gsub!(/[ _\-\.\$]+$/, "")    # => 文末の記号を削除  
-    text.gsub!(/ /, "_")         # => 空白を_に置換  
+    text.gsub!(/ /, "")          # => 空白を削除  
     
     # URLに使えない記号を取り除く
     text.scan(URI::UNSAFE).join.scan(/[^\p{Hiragana}\p{Katakana}一-龠々ー]/).each do |c|
