@@ -2,7 +2,7 @@ require 'addressable/uri'
 require 'uri'
 
 class TwLongText
-  MAX_URL_LENGTH            = 37
+  MAX_URL_LENGTH            = 38
   NORMALIZED_URL_LENGTH     = 23
   MAX_NORMALIZED_URL_LENGTH = 63
 
@@ -26,11 +26,6 @@ class TwLongText
     # URLに使えない記号を取り除く
     text.scan(URI::UNSAFE).join.scan(/[^\p{Hiragana}\p{Katakana}一-龠々ー]/).each do |c|
       text.gsub!(c.to_s, "")
-    end
-
-    # 数字を漢数字に変換する
-    text.scan(/[0-9]+/).each do |n|
-      text.gsub!(n, num_to_k(n.to_i))
     end
 
     puts "---- prepared text ----"
@@ -60,7 +55,8 @@ class TwLongText
   # 受け取った文字列が141文字以上ならURLに変換
   def to_short_text
     puts "links in short text: #{@links}"
-    urls = add_dot(divide @text)
+    urls = divide(@text)
+    puts "dot added urls: #{urls}"
     normalized_urls = urls.map do |url|
       if valid_url?(url) then normalize_url("http://#{url}")
       else url end
@@ -84,17 +80,44 @@ class TwLongText
 
   # 文章を37文字ごとに区切る
   def divide text
-    text.split("").each_slice(MAX_URL_LENGTH).to_a.map{|t| t.join}
+    texts = []
+    que = text.dup.split("")
+    
+    while que.length > 0
+      # 切り出した文字列には、最大で3文字を付与する(.丨)ので、２を引いておく
+      slice_length = (que.length >= MAX_URL_LENGTH-3 ) ? MAX_URL_LENGTH-3 : que.length
+      pt = add_dot( que.slice!(0, slice_length).join ).split("")
+      while que.length > 0 && pt.length < MAX_URL_LENGTH
+        break if que[0].match(/[^\p{Hiragana}\p{Katakana}一-龠々ー]/)
+        pt << que.shift
+      end
+      texts << pt.join
+    end
+    texts
   end
   private :divide
   
   # 24文字以上の文字列要素には、後ろから２文字目にドットを挿入する
-  def add_dot texts
+  def add_dot text
     # 最後の24文字以内にドットが含まれており、かつそのドット以降に数字やアルファベットが入っていない場合は問題無い
-  	texts.map do |t|
-  		if t.length > NORMALIZED_URL_LENGTH then t.insert(-2, ".")
-  		else t end
+  	bet_dot_texts = text.split(".")
+
+    # 最後のドット以降に日本語以外が含まれていた場合は、適当なgTLを追加
+    if bet_dot_texts.last.match(/[^\p{Hiragana}\p{Katakana}一-龠々ー]/)
+      bet_dot_texts.last << ".丨" # 縦棒は漢字のコン
+    end
+
+    puts "bet_dot_texts: #{bet_dot_texts}"
+
+    bet_dot_texts.each do |t|
+      next if t.length < (NORMALIZED_URL_LENGTH)
+      puts "(t.length/NORMALIZED_URL_LENGTH).to_i"
+      puts (t.length/NORMALIZED_URL_LENGTH).floor
+      (t.length/NORMALIZED_URL_LENGTH).floor.times do |i|
+        t.insert( (i * NORMALIZED_URL_LENGTH) + (NORMALIZED_URL_LENGTH).to_i, "." )
+      end
   	end
+    bet_dot_texts.join(".")
   end
   private :add_dot
 
@@ -104,24 +127,4 @@ class TwLongText
   	url.normalize.to_s
   end
   private :normalize_url
-
-  # 数字を漢数字に変換する
-  def num_to_k(n)
-    number = 0..9
-    kanji = ["","一","二","三","四","五","六","七","八","九"]
-    num_kanji = Hash[number.zip(kanji)]
-    digit = [1000,100,10]
-    # digit = (1..3).map{ |i| 10 ** i }.reverse
-    kanji_keta = ["千","百","十"]
-    num_kanji_keta = Hash[digit.zip(kanji_keta)]
-    num = n
-    str = ""
-    digit.each { |d|
-      tmp = num/d
-      str << (tmp == 0 ? "" : ((tmp == 1 ? "" : num_kanji[tmp]) + num_kanji_keta[d]))
-      num %= d
-    }
-    str << num_kanji[num]
-    return str
-  end
 end
