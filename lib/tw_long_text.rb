@@ -32,6 +32,7 @@ class TwLongText
     puts text
     text
   end
+  private :prepare_text
 
   # 日本語URLにすべき状態になっているか
   def valid_url? text
@@ -45,18 +46,18 @@ class TwLongText
     end
     true
   end
+  private :valid_url?
 
   # 正しい変換後のURLになっているか
   def normalized_url? text
     return false if text.index("http") == nil
     true
   end
+  private :normalized_url?
 
   # 受け取った文字列が141文字以上ならURLに変換
   def to_short_text
-    puts "links in short text: #{@links}"
     urls = divide(@text)
-    puts "dot added urls: #{urls}"
     normalized_urls = urls.map do |url|
       if valid_url?(url) then normalize_url("http://#{url}")
       else url end
@@ -67,7 +68,6 @@ class TwLongText
     short_text.gsub!(".丨", "")
 
     @links.each do |link|
-      puts "link: #{link}"
       short_text << " #{link}"
     end
     short_text
@@ -77,10 +77,10 @@ class TwLongText
   def divide_link text
     new_text = text
     @links = URI.extract(text)
-    puts "links in divide_link: #{@links}"
     @links.each{ |link| new_text.gsub!(link, "") }
     new_text
   end
+  private :divide_link
 
   # 文章を37文字ごとに区切る
   def divide text
@@ -111,12 +111,8 @@ class TwLongText
       bet_dot_texts.last << ".丨" # 縦棒は漢字のコン
     end
 
-    puts "bet_dot_texts: #{bet_dot_texts}"
-
     bet_dot_texts.each do |t|
       next if t.length < (NORMALIZED_URL_LENGTH)
-      puts "(t.length/NORMALIZED_URL_LENGTH).to_i"
-      puts (t.length/NORMALIZED_URL_LENGTH).floor
       (t.length/NORMALIZED_URL_LENGTH).floor.times do |i|
         t.insert( (i * NORMALIZED_URL_LENGTH) + (NORMALIZED_URL_LENGTH).to_i, "." )
       end
