@@ -6,8 +6,9 @@ class StaticPagesController < ApplicationController
   	@short_text = ""
   	@convert_text = ""
   	if params[:org_text] != nil
-	  	tw = TwLongText.new(params[:org_text].dup)
-	  	@short_text = tw.to_short_text
+	  	result = TwLongText.new(params[:org_text].dup).to_short_text
+	  	@short_text = result[:short_text]
+	  	@convert_text = result[:convert_text]
 	  end
   end
 

@@ -7,14 +7,14 @@ class TwLongText
   MAX_NORMALIZED_URL_LENGTH = 63
 
   def initialize text
-    @text = prepare_text text
+    @text = preprocess_text text
   end
 
-  def prepare_text text
+  def preprocess_text text
     puts "---- original text ----"
     puts text
     text = divide_link text
-    puts "linnks in prepare_text: #{@links}"
+    puts "linnks in preprocess_text: #{@links}"
     text.gsub!("　", " ")        # => 全角空白を半角空白に置換
     text.gsub!(/^ +/, "")        # => 文頭の空白を削除
     text.gsub!(/ +$/, "")        # => 文末の空白を削除
@@ -32,7 +32,20 @@ class TwLongText
     puts text
     text
   end
-  private :prepare_text
+  private :preprocess_text
+
+  def postprocess_text text
+    # 文章の末尾がURLでなく、かつ.丨だったら取り除く
+    text.gsub!(".丨 *$", "")
+    # ドットが連続している場合は取り除く
+    text.gsub!("..", ".")
+
+    @links.each do |link|
+      text << " #{link}"
+    end
+    puts "postprocess_text #{text}"
+    text
+  end
 
   # 日本語URLにすべき状態になっているか
   def valid_url? text
@@ -57,33 +70,26 @@ class TwLongText
 
   # 受け取った文字列が141文字以上ならURLに変換
   def to_short_text
+    ret = {}
+
     divide_result = divide(@text)
-    urls = divide_result[:texts]
-    normalized_urls = urls.map do |url|
+
+    puts "divide_result"
+    puts divide_result
+
+    normalized_urls = divide_result[:texts].map do |url|
       if valid_url?(url) then normalize_url("http://#{url}")
       else url end
     end
 
-    normalized_urls.map do |url|
-      url.gsub!("http://.", "http://")
-      url.gsub!("https://.", "https://")
-    end
+    ret[:short_text]   = postprocess_text( merge_arrs(normalized_urls, divide_result[:separates]).join )
+    ret[:convert_text] = postprocess_text( merge_arrs(divide_result[:texts], divide_result[:separates]).join )
+    ret
+  end
 
-    short_text =  normalized_urls.map.with_index do |v, i|
-      v + divide_result[:separates][i]
-    end
-    short_text = short_text.join
-    # short_text = normalized_urls.join(" ")
-
-    # 文章の末尾がURLでなく、かつ.丨だったら取り除く
-    short_text.gsub!(".丨", "")
-    # ドットが連続している場合は取り除く
-    short_text.gsub!("..", ".")
-
-    @links.each do |link|
-      short_text << " #{link}"
-    end
-    short_text
+  # 区切り文字と結合
+  def merge_arrs str1, str2
+    str1.map.with_index{ |v, i| v + str2[i] }
   end
 
   # 文章中のURLを文章の最後に持ってくる
@@ -95,11 +101,11 @@ class TwLongText
   end
   private :divide_link
 
-  # 文章を37文字ごとに区切る
+  # 文章をいい感じに区切る
   def divide text
-    ret = {}
+    ret             = {}
     ret[:separates] = []
-    ret[:texts] = []
+    ret[:texts]     = []
     que = text.dup.split("")
     
     while que.length > 0
@@ -117,18 +123,15 @@ class TwLongText
         else ret[:separates] << " " end
       else ret[:separates] << "" end
     end
-    puts "ret in divide"
-    puts ret
-
     ret
   end
   private :divide
-  
-  # 24文字以上の文字列要素には、後ろから２文字目にドットを挿入する
+
+  # 適切な位置にドットを打つ
   def add_dot text
-    # 最後の24文字以内にドットが含まれており、かつそのドット以降に数字やアルファベットが入っていない場合は問題無い
   	bet_dot_texts = text.split(".")
 
+    # ドット間の文字数が規定以上の場合はドットを打つ
     bet_dot_texts.each do |t|
       next if t.length < (NORMALIZED_URL_LENGTH)
       (t.length/NORMALIZED_URL_LENGTH).floor.times do |i|
@@ -149,8 +152,10 @@ class TwLongText
 
   # 日本語URLを読み込み可能な形に変更する
   def normalize_url url
-  	url = Addressable::URI.parse(url)
-  	url.normalize.to_s
+  	url = Addressable::URI.parse(url).normalize.to_s
+    url.gsub!("http://.",  "http://" )
+    url.gsub!("https://.", "https://")
+    url
   end
   private :normalize_url
 end
