@@ -3,6 +3,9 @@
 <%= link_to("元ネタ", "https://twitter.com/yubais/status/539654150045200384") %>
 </p>
 
+<a href="https://twitter.com/share" class="twitter-share-button" data-url="https://tw230.herokuapp.com/" data-text="http://xn--twcomp-141-j83i4f6dpxp467ad4cw04cj0pha6082c0naja1626l.xn--v8jc1fzgveoe2a5fsb5h0tga/ -こんな感じで表示されます.詳細は以下から" data-via="mpppk">Tweet</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+
 <%= form_tag do %>
 <%= simple_format("original text: #{@org_text_length}文字分ぐらい") %>
 <%= text_area_tag :org_text, sanitize(@org_text), :size => "46x5" %>
@@ -40,5 +43,8 @@
 <li>アルファベットを使わない。使う場合はできるだけ文頭の方で使う</li>
 <li>数字を漢数字にする。アラビア数字を使う場合はできるだけ文頭の方で使う</li>
 </ul>
+
+<%= simple_format("不具合などありましたらリプライで教えて下さい。") %>
+<%= link_to("@mpppk", "https://twitter.com/mpppk") %>
 
 <%= simple_format(@version) %>
