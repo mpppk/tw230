@@ -1,7 +1,7 @@
 class StaticPagesController < ApplicationController
 	DEFAULT_FORM_MESSAGE = "ここに変換したい文章を入力してくださいお願いしますどうかこの通りです"
   def home
-		@version      = "v0.1.1"
+		@version      = "v0.1.2"
   	@org_text     = (params[:org_text] != nil)? params[:org_text] : DEFAULT_FORM_MESSAGE
   	@short_text   = ""
   	@convert_text = ""

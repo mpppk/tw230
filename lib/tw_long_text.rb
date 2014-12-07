@@ -4,7 +4,7 @@ require 'nkf'
 
 class TwLongText
   MAX_URL_LENGTH            = 38
-  NORMALIZED_URL_LENGTH     = 23
+  NORMALIZED_URL_LENGTH     = 22
   MAX_NORMALIZED_URL_LENGTH = 63
 
   def initialize text
