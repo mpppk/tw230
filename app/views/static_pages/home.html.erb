@@ -4,28 +4,35 @@
 </p>
 
 <%= form_tag do %>
-<%= simple_format("original text:") %>
+<%= simple_format("original text: #{@org_text_length}文字分ぐらい") %>
 <%= text_area_tag :org_text, sanitize(@org_text), :size => "46x5" %>
 <%= submit_tag "convert" %>
 <% end %>
 
-<%= simple_format("short text:") %>
+<%= simple_format("変換後の予想テキスト: #{@convert_text_length}文字分ぐらい") %>
+<%= text_area_tag :convert_text, sanitize(@convert_text), :size => "46x5" %>
+
+<%= simple_format("short text: #{@short_text_length}文字/140文字 ぐらい") %>
 <%= text_area_tag :short_text, sanitize(@short_text), :size => "46x5" %>
 
-<%= simple_format("変換後テキスト:") %>
-<%= simple_format( sanitize(@convert_text) ) %>
+<%= simple_format("#{sprintf( "%.1f", @comp_rate )}%圧縮しました.") %>
 
-
+<%= simple_format("使い方") %>
+<ol>
+<li>original textに、変換したいテキストを入力して、convetボタンを押してください。</li>
+<li>short textの文字列をコピーしてtwitterクライアントに貼り付けて、投稿してください。</li>
+<li>だいたい元の文字列でTLに表示されます。</li>
+</ol>
 
 <%= simple_format("注意事項") %>
 <ul>
-<li>現状では、変換後の文字数が140文字以下になる保証はありません。twitterにコピペして試してみてください。</li>
+<li>short textの文字数が141文字を越えるとツイートできなくなるので、それ以下になるように元の文章を適宜編集してください。</li>
 <li>句読点はピリオドに変換されます。</li>
 <li>だいたいの記号は削除されます。</li>
 <li>!や?を使うとうまく変換されないので使わないでください。</li>
 <li>文章中に".丨"という記号が付与される場合があります。</li>
 <li>23文字以下の文章は変換を行いません。</li>
-<li>不具合報告はniboshiporipori(at)gmail.comまでお願いします。</li>
+<li>URLは文末に勝手に移動します。</li>
 </ul>
 
 <%= simple_format("効率よく圧縮するコツ") %>

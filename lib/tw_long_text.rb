@@ -7,6 +7,7 @@ class TwLongText
   MAX_NORMALIZED_URL_LENGTH = 63
 
   def initialize text
+    @org_text = text.dup
     @text = preprocess_text text
   end
 
@@ -43,7 +44,6 @@ class TwLongText
     @links.each do |link|
       text << " #{link}"
     end
-    puts "postprocess_text #{text}"
     text
   end
 
@@ -74,16 +74,17 @@ class TwLongText
 
     divide_result = divide(@text)
 
-    puts "divide_result"
-    puts divide_result
-
     normalized_urls = divide_result[:texts].map do |url|
       if valid_url?(url) then normalize_url("http://#{url}")
       else url end
     end
 
-    ret[:short_text]   = postprocess_text( merge_arrs(normalized_urls, divide_result[:separates]).join )
-    ret[:convert_text] = postprocess_text( merge_arrs(divide_result[:texts], divide_result[:separates]).join )
+    ret[:short_text]          = postprocess_text( merge_arrs(normalized_urls, divide_result[:separates]).join )
+    ret[:convert_text]        = postprocess_text( merge_arrs(divide_result[:texts], divide_result[:separates]).join )
+    ret[:org_text]            = @org_text
+    ret[:org_text_length]     = twcount_chars(@org_text)
+    ret[:short_text_length]   = twcount_chars(ret[:short_text])
+    ret[:convert_text_length] = twcount_chars(ret[:convert_text])
     ret
   end
 
@@ -149,6 +150,19 @@ class TwLongText
     bet_dot_texts.join(".")
   end
   private :add_dot
+
+  # twitterのルールに従って文字数を数える(URLは全て23文字)
+  def twcount_chars text
+    t = text.dup
+    urls = URI.extract text
+    urls.each { |url| t.gsub!(url, "") }
+    puts "count urls: #{urls}"
+    puts "t: #{t}"
+    puts "t length: #{t.length}"
+    puts "total count: #{t.length + urls.length * NORMALIZED_URL_LENGTH}"
+    t.length + urls.length * NORMALIZED_URL_LENGTH
+  end
+  private :twcount_chars
 
   # 日本語URLを読み込み可能な形に変更する
   def normalize_url url
