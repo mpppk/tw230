@@ -72,6 +72,8 @@ class TwLongText
 
     # 文章の末尾がURLでなく、かつ.丨だったら取り除く
     short_text.gsub!(".丨", "")
+    # ドットが連続している場合は取り除く
+    short_text.gsub!("..", ".")
 
     @links.each do |link|
       short_text << " #{link}"
